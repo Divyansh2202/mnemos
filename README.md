@@ -13,6 +13,17 @@ You describe your keyboard preference. Next session — you type it again.
 AI assistants have **no persistent memory**. Every session is a blank slate.
 You waste time re-explaining yourself. The AI gives generic answers instead of personalized ones.
 
+**And switching platforms means starting from zero.**
+
+You had a long conversation on ChatGPT — your preferences, your projects, everything it learned about you.
+Now you open Claude. It has no idea about any of it. All that context is gone.
+There is no way to carry memory from one AI platform to another.
+
+**And your raw conversations are trapped.**
+
+Every question you asked, every answer you got — locked inside each platform.
+You cannot export it, search it, or use it anywhere else.
+
 This is not a ChatGPT problem. It is not a Claude problem. It is a **fundamental missing layer** in every AI interface.
 
 ---
@@ -24,19 +35,66 @@ MnemOS is a **Universal Memory Layer** that sits between you and any AI.
 - After every conversation, it **silently extracts facts** about you (preferences, skills, habits, projects)
 - Before every message you send, it **injects relevant memories** into your prompt invisibly
 - The AI responds as if it already knows you — **without you changing anything**
+- Memory is stored by **user ID, not by platform** — so switching from ChatGPT to Claude automatically carries all your context over
+- You can **export your raw conversation** from any platform as JSON and use it anywhere else
 
-You never type your preferences twice. You never repeat context. The AI just knows.
+You never type your preferences twice. You never repeat context. Switch platforms freely. The AI just knows.
 
 ```
-WITHOUT MnemOS                      WITH MnemOS
-─────────────────────────────────   ────────────────────────────────────
-You: "I love Python"                You: "what keyboard should I buy?"
-AI:  "Great!"                       AI:  "Given that you code in Python
-                                         late at night and use Neovim,
-[next session]                           the Keychron Q1 with linear
-                                         switches would suit you well."
-You: "I love Python" ← again
-AI:  "Great!"         ← again      [MnemOS injected context silently]
+WITHOUT MnemOS                        WITH MnemOS
+───────────────────────────────────   ──────────────────────────────────────
+[ChatGPT]                             [ChatGPT]
+You: "I love Python, I use Neovim"    You: "I love Python, I use Neovim"
+AI:  "Great!"                         AI:  "Great!"  → facts stored silently
+
+[next session on Claude]              [next session on Claude]
+You: "help me with code"              You: "help me with code"
+Claude: "Sure, what language?"        Claude: "Here's a Python solution
+                                              optimized for Neovim users..."
+You: "Python..." ← repeating
+                                      [MnemOS injected context from ChatGPT]
+```
+
+### Cross-Platform Memory
+
+Memories are stored by **user ID**, not by platform. Everything you told ChatGPT is available on Claude automatically — no setup needed.
+
+```
+ChatGPT  ──stores──▶  MnemOS (user_id: "default")  ◀──retrieves──  Claude
+Claude   ──stores──▶  MnemOS (user_id: "default")  ◀──retrieves──  ChatGPT
+Your App ──stores──▶  MnemOS (user_id: "default")  ◀──retrieves──  Any platform
+```
+
+### Export Raw Conversations
+
+Every raw conversation is saved automatically. You can export it from the **Dashboard → Sessions tab**:
+
+```
+┌──────────────────────────────────────────────────────┐
+│  Session: "I love Python and FastAPI"                │
+│  ChatGPT  ·  14 messages  ·  2 days ago              │
+│                                  [ ↓ Export ]        │
+└──────────────────────────────────────────────────────┘
+```
+
+Click **Export** → a modal shows the full raw JSON + a formatted preview → click **Download** to save as `.json`, or **Copy** to clipboard.
+
+```json
+{
+  "session_id": "chatgpt_default",
+  "title": "I love Python and FastAPI",
+  "app_id": "chatgpt",
+  "exported_at": "2026-03-30T12:00:00Z",
+  "messages": [
+    {"role": "user",      "content": "I love Python and FastAPI"},
+    {"role": "assistant", "content": "Great choice for backend work!"}
+  ]
+}
+```
+
+Or via API directly:
+```bash
+curl http://localhost:8765/sessions/chatgpt_default?user_id=default
 ```
 
 ---
@@ -861,53 +919,6 @@ curl -X POST http://localhost:8765/memory/retrieve \
 
 > **Recommendation:** Use Gemini for extraction (fast, cheap, high quality).
 > `bge-m3` for embeddings is always local — no data leaves your machine.
-
----
-
-## Problems We Solved
-
-### 1. Infinite loop on Enter key
-**Problem:** The content script dispatches a synthetic Enter keypress to submit — which triggers itself again. Infinite loop.
-
-**Fix:** Check `e.isTrusted`. Real user keypresses → `isTrusted: true`. Script-dispatched events → `isTrusted: false`. Content script ignores non-trusted events completely.
-
-### 2. Memory injection flicker
-**Problem:** Prepending context to the textarea makes the context text briefly visible to the user before the message sends.
-
-**Fix:** `bubbleObserver` — a `MutationObserver` that watches for the AI's "thinking" bubble appearing in the DOM. By the time it appears, the context prefix has already been cleaned up.
-
-### 3. Extension context invalidation
-**Problem:** Chrome can invalidate the extension context after an update. Any `chrome.*` call after that throws an uncatchable error that breaks the page.
-
-**Fix:** `runtimeOk()` guard — checks `chrome.runtime.id` exists before every API call. If undefined, the script goes silent instead of throwing.
-
-### 4. AI extracting real names instead of "User"
-**Problem:** When a user's name appeared in conversation, the LLM extracted "Divyansh knows Python" instead of "User knows Python". Future retrieval queries using "user" found nothing.
-
-**Fix:** Hard rule in extraction prompt: `ALWAYS start every memory with "User" — never use the person's real name`.
-
-### 5. Similarity threshold too high → zero results
-**Problem:** Threshold 0.80 returned 0 results. `bge-m3` cosine scores for semantically related text top out at 0.66–0.82 — not 1.0.
-
-**Fix:** Tested 0.80 → 0.70 → 0.65. At 0.65, relevant memories are returned without noise.
-
-### 6. Gemini JSON truncated mid-array
-**Problem:** `JSONDecodeError at char 3952` — Gemini was cutting off the response. A long conversation with 30+ facts exceeded the default token limit.
-
-**Fix:** `maxOutputTokens` was 1024. Changed to 8192.
-
-### 7. Duplicate memories accumulating
-**Problem:** Re-sending the same conversation extracted the same facts again, doubling stored memories every time.
-
-**Fix:** Two-step dedup in `_find_duplicate`:
-1. Exact text match first (fast, no embedding needed)
-2. Cosine similarity ≥ 0.88 (catches paraphrases and minor rewording)
-If duplicate found → boost `confidence` by 0.05 instead of inserting.
-
-### 8. No-code onboarding for non-technical users
-**Problem:** Setting up MnemOS required terminal commands, which non-technical extension users can't do.
-
-**Fix:** `onboarding.html` wizard opens automatically on install. Server health check, engine picker, model download — all via GUI. Zero terminal commands.
 
 ---
 
