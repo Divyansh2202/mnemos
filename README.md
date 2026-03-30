@@ -243,7 +243,7 @@ As soon as the extension installs, a **Welcome tab opens automatically**.
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  ⬡ MnemOS                                           │
+│  ⬡ MnemOS                                           | 
 │  Universal Memory for AI — set up in 2 minutes      │
 │                                                     │
 │  ●━━━━━━━━━━━○━━━━━━━━━━━○                          │
@@ -253,10 +253,10 @@ As soon as the extension installs, a **Welcome tab opens automatically**.
 │  MnemOS needs a local server running on your        │
 │  machine to store and retrieve memories.            │
 │                                                     │
-│  ┌─────────────────────────────────────────────┐   │
-│  │  ⏳  Checking server...                     │   │
-│  │      Looking for MnemOS at localhost:8765   │   │
-│  └─────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────┐    │ 
+│  │  ⏳  Checking server...                     │    │
+│  │      Looking for MnemOS at localhost:8765   │    │
+│  └─────────────────────────────────────────────┘    │
 │                                                     │
 │  [ ↻ Check Again ]                                  │
 └─────────────────────────────────────────────────────┘
@@ -268,8 +268,8 @@ As soon as the extension installs, a **Welcome tab opens automatically**.
 │  │  ✅  Server is running!                     │   │
 │  │      MnemOS is ready at localhost:8765      │   │
 │  └─────────────────────────────────────────────┘   │
-│                                                     │
-│  [ Continue → ]                                     │
+│                                                    │
+│  [ Continue → ]                                    │
 ```
 
 **If server is NOT running** → status turns red with download button:
@@ -278,12 +278,12 @@ As soon as the extension installs, a **Welcome tab opens automatically**.
 │  │  ❌  Server not found                       │   │
 │  │      Please download and start MnemOS server│   │
 │  └─────────────────────────────────────────────┘   │
-│                                                     │
-│  Download and run the MnemOS server app:            │
-│  [ ⬇ Download MnemOS Server ]                       │
-│  After installing, launch and come back here.       │
-│                                                     │
-│  [ ↻ Check Again ]                                  │
+│                                                    │
+│  Download and run the MnemOS server app:           │
+│  [ ⬇ Download MnemOS Server ]                      │
+│  After installing, launch and come back here.      │
+│                                                    │
+│  [ ↻ Check Again ]                                 │
 ```
 
 ---
@@ -301,18 +301,18 @@ As soon as the extension installs, a **Welcome tab opens automatically**.
 │  How should MnemOS extract memories from            │
 │  your conversations?                                │
 │                                                     │
-│  ┌───────────────────┐  ┌───────────────────┐      │
-│  │  ✦                │  │  🦙               │      │
-│  │  Gemini Flash     │  │  Ollama           │      │
-│  │  Fast · Cloud     │  │  Private · Local  │      │
-│  │  Needs API key    │  │  No internet      │      │
-│  │  [SELECTED]       │  │                   │      │
-│  └───────────────────┘  └───────────────────┘      │
+│  ┌───────────────────┐  ┌───────────────────┐       │
+│  │  ✦                │  │  🦙               │       │
+│  │  Gemini Flash     │  │  Ollama           │       │
+│  │  Fast · Cloud     │  │  Private · Local  │       │
+│  │  Needs API key    │  │  No internet      │       │
+│  │  [SELECTED]       │  │                   │       │
+│  └───────────────────┘  └───────────────────┘       │
 │                                                     │
 │  Gemini API Key  — free at aistudio.google.com      │
-│  ┌─────────────────────────────────────────────┐   │
-│  │  AIzaSy...                              🔒  │   │
-│  └─────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────┐    │
+│  │  AIzaSy...                              🔒  │    │
+│  └─────────────────────────────────────────────┘    │
 │  Get a free API key →                               │
 │                                                     │
 │  [ Save & Continue → ]   [ ← Back ]                 │
@@ -321,36 +321,36 @@ As soon as the extension installs, a **Welcome tab opens automatically**.
 
 **If you pick Ollama** → engine card switches, model list appears:
 ```
-│  ┌───────────────────┐  ┌───────────────────┐      │
-│  │  ✦                │  │  🦙               │      │
-│  │  Gemini Flash     │  │  Ollama           │      │
-│  │                   │  │  [SELECTED]       │      │
-│  └───────────────────┘  └───────────────────┘      │
+│  ┌───────────────────┐  ┌───────────────────┐       │
+│  │  ✦                │  │  🦙               │       │
+│  │  Gemini Flash     │  │  Ollama           │       │
+│  │                   │  │  [SELECTED]       │       │
+│  └───────────────────┘  └───────────────────┘       │
 │                                                     │
 │  Select a model. Click Download if not downloaded.  │
 │                                                     │
 │  ┌─────────────────────────────────┬──────┬───────┐ │
 │  │ qwen2.5:0.5b  Fastest · Lightest│0.4 GB│Download│ │
-│  ├─────────────────────────────────┼──────┼───────┤ │
+│  ├─────────────────────────────────┼──────┼───────┤  │
 │  │ qwen2.5:1.5b  Fast · Good       │1.0 GB│Download│ │
-│  ├─────────────────────────────────┼──────┼───────┤ │
-│  │ qwen2.5:3b  ⭐ Recommended      │1.9 GB│✓ Ready│ │  ← green border
-│  ├─────────────────────────────────┼──────┼───────┤ │
+│  ├─────────────────────────────────┼──────┼───────┤  │
+│  │ qwen2.5:3b  ⭐ Recommended      │1.9 GB│✓ Ready│  │  ← green border
+│  ├─────────────────────────────────┼──────┼───────┤  │
 │  │ qwen2.5:7b  High quality        │4.7 GB│Download│ │
-│  ├─────────────────────────────────┼──────┼───────┤ │
+│  ├─────────────────────────────────┼──────┼───────┤  │
 │  │ qwen2.5:14b Very high quality   │9.0 GB│Download│ │
-│  ├─────────────────────────────────┼──────┼───────┤ │
+│  ├─────────────────────────────────┼──────┼───────┤  │
 │  │ llama3.2:3b  Meta Llama 3.2     │2.0 GB│Download│ │
-│  ├─────────────────────────────────┼──────┼───────┤ │
+│  ├─────────────────────────────────┼──────┼───────┤  │
 │  │ mistral:7b   Mistral 7B         │4.1 GB│Download│ │
-│  ├─────────────────────────────────┼──────┼───────┤ │
+│  ├─────────────────────────────────┼──────┼───────┤  │
 │  │ phi3:mini    Microsoft Phi-3    │2.2 GB│Download│ │
-│  └─────────────────────────────────┴──────┴───────┘ │
-│                                                     │
-│  Click a row to select. Click Download to fetch it. │
-│  ┌──────────────────────────────────────────────┐   │
-│  │ Downloading...  ████████░░░░░░░░░  54%       │   │
-│  └──────────────────────────────────────────────┘   │
+│  └─────────────────────────────────┴──────┴───────┘  │
+│                                                      │
+│  Click a row to select. Click Download to fetch it.  │
+│  ┌──────────────────────────────────────────────┐    │
+│  │ Downloading...  ████████░░░░░░░░░  54%       │    │
+│  └──────────────────────────────────────────────┘    │
 ```
 
 ---
@@ -369,19 +369,19 @@ As soon as the extension installs, a **Welcome tab opens automatically**.
 │  MnemOS will now silently remember everything       │
 │  across your AI conversations.                      │
 │                                                     │
-│  ┌────────────────────────────────────────────┐    │
-│  │ 🧠  Auto Memory                            │    │
-│  │     After each conversation, MnemOS        │    │
-│  │     extracts and stores key facts.         │    │
-│  ├────────────────────────────────────────────┤    │
-│  │ ⚡  Smart Injection                        │    │
-│  │     Relevant memories are silently added   │    │
-│  │     so AI always has context.              │    │
-│  ├────────────────────────────────────────────┤    │
-│  │ 🔒  Fully Private                          │    │
-│  │     Everything stays on your machine.      │    │
-│  │     No data sent to MnemOS servers.        │    │
-│  └────────────────────────────────────────────┘    │
+│  ┌────────────────────────────────────────────┐     │
+│  │ 🧠  Auto Memory                            │     │
+│  │     After each conversation, MnemOS        │     │
+│  │     extracts and stores key facts.         │     │
+│  ├────────────────────────────────────────────┤     │
+│  │ ⚡  Smart Injection                        │     │
+│  │     Relevant memories are silently added   │     │
+│  │     so AI always has context.              │     │
+│  ├────────────────────────────────────────────┤     │
+│  │ 🔒  Fully Private                          │     │
+│  │     Everything stays on your machine.      │     │
+│  │     No data sent to MnemOS servers.        │     │ 
+│  └────────────────────────────────────────────┘     │
 │                                                     │
 │  [ Open ChatGPT and try it → ]                      │
 │  Or open Claude — MnemOS works on all of them.      │
@@ -421,9 +421,9 @@ Click the ⬡ icon in your toolbar any time:
 │  [ qwen2.5:3b        ▼ ] [Download]  │  ← appears when Ollama selected
 │  [ Apply ]                           │
 ├──────────────────────────────────────┤
-│  [ ⬡ Dashboard ]  [ ◎ Sessions ]    │
+│  [ ⬡ Dashboard ]  [ ◎ Sessions ]     │
 ├──────────────────────────────────────┤
-│  ☑ Auto-capture              [ ↻ ]  │
+│  ☑ Auto-capture              [ ↻ ]   │
 └──────────────────────────────────────┘
 ```
 
@@ -436,7 +436,8 @@ Click the ⬡ icon in your toolbar any time:
 ### Install
 
 ```bash
-git clone https://github.com/Divyansh2202/mnemos.git
+git clone https://github.com/Divyansh2
+202/mnemos.git
 cd mnemos
 python3 -m venv myenv
 source myenv/bin/activate
