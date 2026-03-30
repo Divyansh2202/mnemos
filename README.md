@@ -113,27 +113,27 @@ MnemOS extracts the key facts automatically — but sometimes you want to give a
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                             MnemOS System                                    │
-│                                                                              │
-│  ┌─────────────┐  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│  │ ChatGPT.com │  │  Claude.ai  │  │  Your App    │  │  Claude Desktop  │  │
-│  │ (Extension) │  │ (Extension) │  │  (Python SDK)│  │  (MCP Server)    │  │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬───────┘  └────────┬─────────┘  │
+│                             MnemOS System                                   │
+│                                                                             │
+│  ┌─────────────┐  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐   │
+│  │ ChatGPT.com │  │  Claude.ai  │  │  Your App    │  │  Claude Desktop  │   │
+│  │ (Extension) │  │ (Extension) │  │  (Python SDK)│  │  (MCP Server)    │   │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬───────┘  └────────┬─────────┘   │
 │         └────────────────┴─────────────────┴───────────────────┘            │
-│                                    │                                         │
-│                                    ▼                                         │
+│                                    │                                        │
+│                                    ▼                                        │
 │                     ┌──────────────────────────┐                            │
-│                     │     MnemOS Server         │                            │
-│                     │     FastAPI  :8765         │                            │
+│                     │     MnemOS Server         │                           │
+│                     │     FastAPI  :8765         │                          │
 │                     └─────────────┬────────────┘                            │
-│                                   │                                          │
+│                                   │                                         │
 │              ┌────────────────────┴──────────────────────┐                  │
-│              ▼                                            ▼                  │
+│              ▼                                            ▼                 │
 │   ┌──────────────────────┐                  ┌───────────────────────┐       │
 │   │   Context Engine     │                  │    Memory Store       │       │
 │   │                      │                  │                       │       │
 │   │  ┌────────────────┐  │                  │  PostgreSQL + pgvector│       │
-│   │  │ Gemini 2.5 Flash│  │                  │  cosine similarity    │       │
+│   │  │ Gemini 2.5 Flash│  │                  │  cosine similarity    │      │
 │   │  │ (cloud, fast)  │  │                  │  threshold: 0.65      │       │
 │   │  └────────────────┘  │                  └──────────┬────────────┘       │
 │   │         OR           │                             │                    │
