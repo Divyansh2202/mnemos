@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: mnemos123
+      POSTGRES_DB:       mnemos
+    ports:
+      - "5433:5432"
+    volumes:
+      - mnemos_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  mnemos_data:

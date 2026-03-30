@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MnemOS Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0b0b14;
+      --surface:   #13131f;
+      --surface2:  #1a1a2e;
+      --border:    #1e1e3a;
+      --border2:   #2d2d5a;
+      --accent:    #7c3aed;
+      --accent2:   #a78bfa;
+      --text:      #e2e8f0;
+      --text2:     #94a3b8;
+      --text3:     #4b5563;
+      --green:     #34d399;
+      --red:       #ef4444;
+      --orange:    #f97316;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 20px; }
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo svg { width: 24px; height: 24px; }
+    .server-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text2);
+    }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--text3);
+      flex-shrink: 0;
+    }
+    .status-dot.on  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .status-dot.off { background: #ef4444; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .user-pill {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: var(--text2);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .icon-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      color: var(--text3);
+      cursor: pointer;
+      padding: 6px 10px;
+      font-size: 13px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .icon-btn:hover { color: var(--accent2); border-color: var(--accent); }
+
+    /* ── LAYOUT ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 56px);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .sidebar-label {
+      font-size: 10px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 4px 10px;
+      margin-top: 8px;
+    }
+    .nav-btn {
+      background: none;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text2);
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.15s, color 0.15s;
+      width: 100%;
+    }
+    .nav-btn:hover { background: var(--surface2); color: var(--text); }
+    .nav-btn.active { background: #1e1b4b; color: var(--accent2); }
+    .nav-btn .badge {
+      margin-left: auto;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 10px;
+      padding: 1px 7px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+    /* ── MAIN ── */
+    .main { padding: 28px; overflow-y: auto; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .page-sub {
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 24px;
+    }
+
+    /* ── STATS CARDS ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 4px;
+    }
+
+    /* ── APP BREAKDOWN ── */
+    .section { margin-bottom: 28px; }
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .app-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .app-chip {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .app-chip .count {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 10px;
+      padding: 1px 6px;
+      font-size: 10px;
+    }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+    .search-wrap { position: relative; flex: 1; }
+    .search-wrap input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 9px 12px 9px 36px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text3);
+      font-size: 14px;
+      pointer-events: none;
+    }
+    select {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 9px 28px 9px 12px;
+      color: var(--text2);
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+    select:focus { border-color: var(--accent); }
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: #6d28d9; }
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text2);
+      font-size: 13px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-ghost:hover { color: var(--accent2); border-color: var(--accent); }
+
+    /* ── MEMORY CARDS ── */
+    .cards { display: flex; flex-direction: column; gap: 8px; }
+    .memory-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: start;
+      transition: border-color 0.2s;
+    }
+    .memory-card:hover { border-color: var(--border2); }
+    .memory-content {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .memory-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 10px;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-weight: 500;
+    }
+    .tag-semantic   { background: #1e1b4b; color: var(--accent2); }
+    .tag-episodic   { background: #1a2e1a; color: #4ade80; }
+    .tag-procedural { background: #2e1a1a; color: #f87171; }
+    .tag-app        { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
+    .meta-dot { color: var(--text3); font-size: 10px; }
+    .meta-text { font-size: 11px; color: var(--text3); }
+    .confidence-bar {
+      height: 3px;
+      background: var(--border2);
+      border-radius: 2px;
+      width: 60px;
+      margin-top: 2px;
+    }
+    .confidence-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+    .card-actions { display: flex; gap: 4px; }
+    .del-btn {
+      background: none;
+      border: none;
+      color: var(--text3);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .del-btn:hover { color: var(--red); background: #2e1a1a; }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text3);
+    }
+    .empty-state .big { font-size: 40px; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── SESSIONS ── */
+    .session-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
+    }
+    .session-card:hover { border-color: var(--border2); }
+    .session-header {
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      user-select: none;
+    }
+    .session-header:hover .session-title { color: var(--accent2); }
+    .session-app-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .app-chatgpt { background: #1a2e1a; color: #4ade80; }
+    .app-claude  { background: #2e1f1a; color: #fb923c; }
+    .app-cursor  { background: #1a1f2e; color: #60a5fa; }
+    .app-unknown { background: var(--surface2); color: var(--text2); }
+    .session-info { flex: 1; min-width: 0; }
+    .session-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.2s;
+    }
+    .session-meta { font-size: 11px; color: var(--text3); margin-top: 3px; }
+    .session-badge {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-size: 10px;
+      color: var(--text2);
+      white-space: nowrap;
+    }
+    .chevron {
+      color: var(--text3);
+      font-size: 12px;
+      transition: transform 0.2s;
+    }
+    .session-card.open .chevron { transform: rotate(180deg); }
+    .session-messages {
+      display: none;
+      border-top: 1px solid var(--border);
+      padding: 16px;
+      background: var(--bg);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .session-card.open .session-messages { display: block; }
+    .msg-bubble {
+      max-width: 80%;
+      margin-bottom: 12px;
+    }
+    .msg-bubble.user { margin-left: auto; }
+    .msg-role {
+      font-size: 10px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .msg-bubble.user .msg-role { text-align: right; }
+    .msg-text {
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 10px 14px;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .msg-bubble.user .msg-text {
+      background: #1e1b4b;
+      color: var(--accent2);
+      border-radius: 10px 10px 2px 10px;
+    }
+    .msg-bubble.assistant .msg-text {
+      background: var(--surface2);
+      color: var(--text);
+      border-radius: 10px 10px 10px 2px;
+    }
+
+    /* ── SETTINGS PAGE ── */
+    .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .settings-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .settings-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .field input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .field input:focus { border-color: var(--accent); }
+
+    /* ── LOADER ── */
+    .loader {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: var(--text3);
+      font-size: 13px;
+      gap: 10px;
+    }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── PAGINATION ── */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .pagination button {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 12px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .pagination button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent2); }
+    .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .pagination .page-info { font-size: 12px; color: var(--text3); }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface2);
+      color: var(--accent2);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: monospace;
+      border: 1px solid var(--accent);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── EXPORT BUTTON ON SESSION CARD ── */
+    .session-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .export-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      color: var(--text3);
+      cursor: pointer;
+      padding: 3px 8px;
+      font-size: 11px;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      white-space: nowrap;
+    }
+    .export-btn:hover { color: var(--accent2); border-color: var(--accent); background: #1e1b4b; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 760px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .modal-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .modal-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text3);
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .modal-tab {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 12px 16px;
+      color: var(--text3);
+      cursor: pointer;
+      font-size: 13px;
+      transition: color 0.2s, border-color 0.2s;
+      margin-bottom: -1px;
+    }
+    .modal-tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+    .modal-tab:hover:not(.active) { color: var(--text2); }
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Raw JSON view */
+    .json-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .json-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+    .json-actions { display: flex; gap: 8px; }
+    .json-box {
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #a78bfa;
+      white-space: pre;
+      overflow-x: auto;
+      max-height: 380px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+
+    /* Context view */
+    .platform-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .platform-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 13px;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .platform-btn:hover { border-color: var(--accent); color: var(--accent2); background: #1e1b4b; }
+    .platform-btn .icon { font-size: 16px; }
+    .context-preview {
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 12px;
+      color: var(--text2);
+      white-space: pre-wrap;
+      max-height: 320px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .context-note {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: var(--surface2);
+      border-radius: 6px;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L20.66 7V17L12 22L3.34 17V7L12 2Z" stroke="#a78bfa" stroke-width="1.5" fill="none"/>
+        <circle cx="12" cy="12" r="2" fill="#a78bfa"/>
+        <circle cx="12" cy="6"  r="1.2" fill="#7c3aed"/>
+        <circle cx="12" cy="18" r="1.2" fill="#7c3aed"/>
+        <circle cx="6.5"  cy="9"  r="1.2" fill="#7c3aed"/>
+        <circle cx="17.5" cy="9"  r="1.2" fill="#7c3aed"/>
+        <circle cx="6.5"  cy="15" r="1.2" fill="#7c3aed"/>
+        <circle cx="17.5" cy="15" r="1.2" fill="#7c3aed"/>
+        <line x1="12" y1="12" x2="12"   y2="7.2"  stroke="#4c1d95" stroke-width="0.8"/>
+        <line x1="12" y1="12" x2="12"   y2="16.8" stroke="#4c1d95" stroke-width="0.8"/>
+        <line x1="12" y1="12" x2="7.3"  y2="9.8"  stroke="#4c1d95" stroke-width="0.8"/>
+        <line x1="12" y1="12" x2="16.7" y2="9.8"  stroke="#4c1d95" stroke-width="0.8"/>
+        <line x1="12" y1="12" x2="7.3"  y2="14.2" stroke="#4c1d95" stroke-width="0.8"/>
+        <line x1="12" y1="12" x2="16.7" y2="14.2" stroke="#4c1d95" stroke-width="0.8"/>
+      </svg>
+      MnemOS
+    </div>
+    <div class="server-info">
+      <div id="status-dot" class="status-dot"></div>
+      <span id="server-url-display">localhost:8765</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="user-pill">
+      <span>👤</span>
+      <span id="user-id-display">default</span>
+    </div>
+    <button class="icon-btn" onclick="refreshAll()" title="Refresh all">↻</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-label">Navigation</div>
+    <button class="nav-btn active" onclick="showPage('overview')" id="nav-overview">
+      <span class="nav-icon">◈</span> Overview
+    </button>
+    <button class="nav-btn" onclick="showPage('memories')" id="nav-memories">
+      <span class="nav-icon">◉</span> Memories
+      <span class="badge" id="mem-badge">0</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('sessions')" id="nav-sessions">
+      <span class="nav-icon">◎</span> Sessions
+      <span class="badge" id="sess-badge">0</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('settings')" id="nav-settings">
+      <span class="nav-icon">◧</span> Settings
+    </button>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- OVERVIEW PAGE -->
+    <div class="page active" id="page-overview">
+      <div class="page-title">Overview</div>
+      <div class="page-sub">Your memory stats at a glance</div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Total Memories</div>
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-sub">extracted facts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Sessions</div>
+          <div class="stat-value" id="stat-sessions">—</div>
+          <div class="stat-sub">conversations stored</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Semantic</div>
+          <div class="stat-value" id="stat-semantic">—</div>
+          <div class="stat-sub">general facts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Episodic</div>
+          <div class="stat-value" id="stat-episodic">—</div>
+          <div class="stat-sub">experiences</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">By Application</div>
+        <div class="app-chips" id="app-chips">
+          <div class="loader"><div class="spinner"></div> Loading...</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Recent Memories</div>
+        <div class="cards" id="recent-cards">
+          <div class="loader"><div class="spinner"></div> Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMORIES PAGE -->
+    <div class="page" id="page-memories">
+      <div class="page-title">Memories</div>
+      <div class="page-sub">All extracted knowledge from your conversations</div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="mem-search" placeholder="Search memories..." oninput="filterMemories()" />
+        </div>
+        <select id="mem-filter-app" onchange="filterMemories()">
+          <option value="">All apps</option>
+          <option value="chatgpt">ChatGPT</option>
+          <option value="claude">Claude</option>
+          <option value="cursor">Cursor</option>
+        </select>
+        <select id="mem-filter-type" onchange="filterMemories()">
+          <option value="">All types</option>
+          <option value="semantic">Semantic</option>
+          <option value="episodic">Episodic</option>
+          <option value="procedural">Procedural</option>
+        </select>
+        <button class="btn-ghost" onclick="loadMemories()">↻</button>
+      </div>
+
+      <div class="cards" id="mem-cards">
+        <div class="loader"><div class="spinner"></div> Loading...</div>
+      </div>
+      <div class="pagination" id="mem-pagination"></div>
+    </div>
+
+    <!-- SESSIONS PAGE -->
+    <div class="page" id="page-sessions">
+      <div class="page-title">Sessions</div>
+      <div class="page-sub">Raw conversation history</div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="sess-search" placeholder="Search sessions..." oninput="filterSessions()" />
+        </div>
+        <select id="sess-filter-app" onchange="filterSessions()">
+          <option value="">All apps</option>
+          <option value="chatgpt">ChatGPT</option>
+          <option value="claude">Claude</option>
+          <option value="cursor">Cursor</option>
+        </select>
+        <button class="btn-ghost" onclick="loadSessions()">↻</button>
+      </div>
+
+      <div id="sess-cards">
+        <div class="loader"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="page-settings">
+      <div class="page-title">Settings</div>
+      <div class="page-sub">Configure your MnemOS server connection</div>
+
+      <div class="settings-grid">
+        <div class="settings-card">
+          <h3>Server Connection</h3>
+          <div class="field">
+            <label>Server URL</label>
+            <input type="text" id="set-server" placeholder="http://localhost:8765" />
+          </div>
+          <div class="field">
+            <label>User ID</label>
+            <input type="text" id="set-userid" placeholder="default" />
+          </div>
+          <button class="btn" onclick="saveSettings()">Save Settings</button>
+        </div>
+
+        <div class="settings-card">
+          <h3>Server Status</h3>
+          <div id="health-detail" style="color:var(--text2);font-size:13px">Checking...</div>
+        </div>
+
+        <div class="settings-card" style="grid-column:1/-1">
+          <h3>Extraction Engine</h3>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
+            <div class="field" style="flex:1;min-width:160px">
+              <label>Engine</label>
+              <select id="set-engine" onchange="onEngineChange()" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text1);font-size:12px;outline:none">
+                <option value="gemini">Gemini 2.5 Flash</option>
+                <option value="ollama">Ollama (local)</option>
+              </select>
+            </div>
+            <div class="field" id="model-field" style="flex:2;min-width:200px">
+              <label>Ollama Model <span onclick="loadOllamaModels()" style="cursor:pointer;color:var(--accent);font-size:10px;margin-left:6px">↻ refresh</span></label>
+              <select id="set-model" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text1);font-size:12px;outline:none">
+                <option value="">Loading models...</option>
+              </select>
+            </div>
+            <button class="btn" onclick="saveEngineConfig()" style="height:34px;margin-bottom:1px">Apply</button>
+          </div>
+          <div id="engine-status" style="margin-top:10px;font-size:12px;color:var(--text2)"></div>
+
+          <!-- Popular models to download -->
+          <div id="model-field" style="margin-top:16px">
+            <div class="label" style="margin-bottom:8px">Popular Models <span style="font-size:10px;color:var(--text2);text-transform:none">(click Download to pull from Ollama)</span></div>
+            <div id="popular-models-list" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="export-modal" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Session Export</div>
+        <div class="modal-meta" id="modal-meta"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchTab('raw')"    id="tab-raw">Raw JSON</button>
+      <button class="modal-tab"        onclick="switchTab('context')" id="tab-context">Copy as Context</button>
+      <button class="modal-tab"        onclick="switchTab('chat')"    id="tab-chat">Messages</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- RAW JSON TAB -->
+      <div class="tab-panel active" id="panel-raw">
+        <div class="json-toolbar">
+          <span class="json-label">conversation.json</span>
+          <div class="json-actions">
+            <button class="btn-ghost" onclick="copyJSON()">Copy JSON</button>
+            <button class="btn" onclick="downloadJSON()">Download</button>
+          </div>
+        </div>
+        <div class="json-box" id="json-box"></div>
+      </div>
+
+      <!-- CONTEXT TAB -->
+      <div class="tab-panel" id="panel-context">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:14px">
+          Click a platform to copy a ready-to-paste prompt for that AI:
+        </div>
+        <div class="platform-row">
+          <button class="platform-btn" onclick="copyForPlatform('chatgpt')">
+            <span class="icon">🤖</span> ChatGPT
+          </button>
+          <button class="platform-btn" onclick="copyForPlatform('claude')">
+            <span class="icon">🧠</span> Claude
+          </button>
+          <button class="platform-btn" onclick="copyForPlatform('gemini')">
+            <span class="icon">✦</span> Gemini
+          </button>
+          <button class="platform-btn" onclick="copyForPlatform('generic')">
+            <span class="icon">◈</span> Any AI
+          </button>
+        </div>
+        <div class="context-preview" id="context-preview"></div>
+        <div class="context-note">
+          Paste this into any AI chat to resume the conversation with full context.
+        </div>
+      </div>
+
+      <!-- MESSAGES TAB -->
+      <div class="tab-panel" id="panel-chat">
+        <div id="modal-messages"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────
+let SERVER = localStorage.getItem("mnemos_server") || "http://localhost:8765";
+let USER_ID = localStorage.getItem("mnemos_user")  || "default";
+
+let allMemories = [];
+let allSessions = [];
+const PAGE_SIZE = 20;
+let memPage = 0;
+
+// ── INIT ──────────────────────────────────────────────────────
+function init() {
+  document.getElementById("server-url-display").textContent = SERVER.replace(/^https?:\/\//, "");
+  document.getElementById("user-id-display").textContent    = USER_ID;
+  document.getElementById("set-server").value  = SERVER;
+  document.getElementById("set-userid").value  = USER_ID;
+  checkHealth();
+  loadStats();
+  loadMemories();
+  loadSessions();
+
+  // URL hash navigation (e.g. /dashboard#sessions)
+  const hash = location.hash.replace("#", "");
+  if (["memories","sessions","settings"].includes(hash)) showPage(hash);
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("page-" + name).classList.add("active");
+  document.getElementById("nav-" + name).classList.add("active");
+  location.hash = name === "overview" ? "" : name;
+  if (name === "settings") loadEngineConfig();
+}
+
+// ── API ───────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  const resp = await fetch(SERVER + path, {
+    headers: { "Content-Type": "application/json" },
+    ...opts,
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return resp.json();
+}
+
+// ── HEALTH ────────────────────────────────────────────────────
+async function checkHealth() {
+  const dot = document.getElementById("status-dot");
+  try {
+    const data = await api("/health");
+    dot.className = "status-dot on";
+    document.getElementById("health-detail").innerHTML =
+      `<span style="color:var(--green)">● Online</span><br>
+       <span style="color:var(--text3);font-size:11px">Version ${data.version}</span>`;
+  } catch {
+    dot.className = "status-dot off";
+    document.getElementById("health-detail").innerHTML =
+      `<span style="color:var(--red)">● Offline</span><br>
+       <span style="color:var(--text3);font-size:11px">Cannot reach ${SERVER}</span>`;
+  }
+}
+
+// ── STATS ─────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const data = await api("/stats");
+    document.getElementById("stat-total").textContent    = data.total_memories ?? 0;
+    document.getElementById("stat-semantic").textContent = data.by_type?.semantic  ?? 0;
+    document.getElementById("stat-episodic").textContent = data.by_type?.episodic  ?? 0;
+
+    // App chips
+    const chips = document.getElementById("app-chips");
+    const byApp = data.by_app || {};
+    if (Object.keys(byApp).length === 0) {
+      chips.innerHTML = '<span style="color:var(--text3);font-size:12px">No data yet</span>';
+    } else {
+      chips.innerHTML = Object.entries(byApp)
+        .sort((a, b) => b[1] - a[1])
+        .map(([app, count]) => `
+          <div class="app-chip">
+            ${appIcon(app)} ${app}
+            <span class="count">${count}</span>
+          </div>
+        `).join("");
+    }
+  } catch {
+    document.getElementById("stat-total").textContent = "—";
+  }
+}
+
+function appIcon(app) {
+  const icons = { chatgpt: "🤖", claude: "🧠", cursor: "⌨", default: "◈" };
+  return icons[app] || icons.default;
+}
+
+// ── MEMORIES ─────────────────────────────────────────────────
+async function loadMemories() {
+  try {
+    const data = await api(`/memory/all?user_id=${USER_ID}&limit=200`);
+    allMemories = data.memories || [];
+    document.getElementById("mem-badge").textContent = allMemories.length;
+    document.getElementById("stat-total").textContent = allMemories.length;
+    memPage = 0;
+    renderRecentMemories();
+    renderMemories();
+  } catch (e) {
+    renderError("mem-cards", "Failed to load memories");
+  }
+}
+
+function filterMemories() {
+  memPage = 0;
+  renderMemories();
+}
+
+function getFilteredMemories() {
+  const q    = document.getElementById("mem-search").value.toLowerCase();
+  const app  = document.getElementById("mem-filter-app").value;
+  const type = document.getElementById("mem-filter-type").value;
+  return allMemories.filter(m =>
+    (!q    || m.content.toLowerCase().includes(q)) &&
+    (!app  || m.app_id  === app) &&
+    (!type || m.type    === type)
+  );
+}
+
+function renderRecentMemories() {
+  const cards = document.getElementById("recent-cards");
+  const recent = allMemories.slice(0, 5);
+  if (recent.length === 0) {
+    cards.innerHTML = '<div class="empty-state"><p>No memories yet — start chatting on ChatGPT or Claude!</p></div>';
+    return;
+  }
+  cards.innerHTML = recent.map(m => memCard(m)).join("");
+  cards.querySelectorAll(".del-btn").forEach(b => b.onclick = () => deleteMemory(b.dataset.id));
+}
+
+function renderMemories() {
+  const cards   = document.getElementById("mem-cards");
+  const filtered = getFilteredMemories();
+  const start   = memPage * PAGE_SIZE;
+  const page    = filtered.slice(start, start + PAGE_SIZE);
+
+  if (filtered.length === 0) {
+    cards.innerHTML = `<div class="empty-state"><div class="big">◉</div><p>No memories match your search</p></div>`;
+    document.getElementById("mem-pagination").innerHTML = "";
+    return;
+  }
+
+  cards.innerHTML = page.map(m => memCard(m)).join("");
+  cards.querySelectorAll(".del-btn").forEach(b => b.onclick = () => deleteMemory(b.dataset.id));
+
+  // Pagination
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const pg = document.getElementById("mem-pagination");
+  if (totalPages <= 1) { pg.innerHTML = ""; return; }
+  pg.innerHTML = `
+    <button onclick="changePage(-1)" ${memPage === 0 ? "disabled" : ""}>← Prev</button>
+    <span class="page-info">${memPage + 1} / ${totalPages}</span>
+    <button onclick="changePage(1)"  ${memPage >= totalPages - 1 ? "disabled" : ""}>Next →</button>
+  `;
+}
+
+function changePage(delta) {
+  memPage += delta;
+  renderMemories();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function memCard(m) {
+  const date = m.created_at
+    ? new Date(m.created_at).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" })
+    : "";
+  const conf = Math.round((m.confidence || 0.8) * 100);
+  const typeClass = `tag-${m.type}`;
+  return `
+    <div class="memory-card">
+      <div>
+        <div class="memory-content">${esc(m.content)}</div>
+        <div class="memory-meta">
+          <span class="tag ${typeClass}">${m.type}</span>
+          <span class="tag tag-app">${appIcon(m.app_id)} ${m.app_id}</span>
+          ${date ? `<span class="meta-dot">·</span><span class="meta-text">${date}</span>` : ""}
+          <span class="meta-dot">·</span>
+          <div class="confidence-bar" title="Confidence ${conf}%"><div class="confidence-fill" style="width:${conf}%"></div></div>
+          <span class="meta-text">${conf}%</span>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="del-btn" data-id="${esc(m.id)}" title="Delete memory">×</button>
+      </div>
+    </div>
+  `;
+}
+
+async function deleteMemory(id) {
+  if (!confirm("Delete this memory?")) return;
+  try {
+    await api(`/memory/${id}`, { method: "DELETE" });
+    allMemories = allMemories.filter(m => m.id !== id);
+    document.getElementById("mem-badge").textContent  = allMemories.length;
+    document.getElementById("stat-total").textContent = allMemories.length;
+    renderRecentMemories();
+    renderMemories();
+    showToast("Memory deleted");
+  } catch {
+    showToast("Failed to delete memory");
+  }
+}
+
+// ── SESSIONS ──────────────────────────────────────────────────
+async function loadSessions() {
+  try {
+    const data = await api(`/sessions?user_id=${USER_ID}&limit=100`);
+    allSessions = data.sessions || [];
+    document.getElementById("sess-badge").textContent  = allSessions.length;
+    document.getElementById("stat-sessions").textContent = allSessions.length;
+    renderSessions();
+  } catch {
+    renderError("sess-cards", "Failed to load sessions");
+  }
+}
+
+function filterSessions() {
+  renderSessions();
+}
+
+function getFilteredSessions() {
+  const q   = document.getElementById("sess-search").value.toLowerCase();
+  const app = document.getElementById("sess-filter-app").value;
+  return allSessions.filter(s =>
+    (!q   || (s.title || "").toLowerCase().includes(q)) &&
+    (!app || s.app_id === app)
+  );
+}
+
+function renderSessions() {
+  const container = document.getElementById("sess-cards");
+  const filtered  = getFilteredSessions();
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="big">◎</div><p>No sessions yet — conversations will appear here after you chat</p></div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(s => sessionCard(s)).join("");
+
+  container.querySelectorAll(".session-header").forEach(h => {
+    h.addEventListener("click", (e) => {
+      // Don't toggle if export button was clicked
+      if (e.target.closest(".export-btn")) return;
+      const card = h.closest(".session-card");
+      const wasOpen = card.classList.contains("open");
+      container.querySelectorAll(".session-card").forEach(c => c.classList.remove("open"));
+      if (!wasOpen) {
+        card.classList.add("open");
+        loadSessionMessages(card, h.dataset.id);
+      }
+    });
+  });
+
+  container.querySelectorAll(".export-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openExportModal(btn.dataset.exportId, btn.dataset.title, btn.dataset.app);
+    });
+  });
+}
+
+function sessionCard(s) {
+  const date = s.updated_at
+    ? new Date(s.updated_at).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" })
+    : "";
+  const appClass = `app-${s.app_id}`;
+  const initial  = (s.app_id || "?")[0].toUpperCase();
+  const title    = s.title || s.session_id || "Untitled session";
+  const msgCount = s.message_count ?? "?";
+  return `
+    <div class="session-card" data-session-id="${esc(s.session_id)}">
+      <div class="session-header" data-id="${esc(s.session_id)}">
+        <div class="session-app-icon ${appClass}">${initial}</div>
+        <div class="session-info">
+          <div class="session-title" title="${esc(title)}">${esc(title)}</div>
+          <div class="session-meta">${appIcon(s.app_id)} ${s.app_id}${date ? " · " + date : ""}</div>
+        </div>
+        <div class="session-actions">
+          <span class="session-badge">${msgCount} msgs</span>
+          <button class="export-btn" data-export-id="${esc(s.session_id)}"
+                  data-title="${esc(title)}" data-app="${esc(s.app_id)}"
+                  title="Export / Send to AI">Export ↗</button>
+          <span class="chevron">▾</span>
+        </div>
+      </div>
+      <div class="session-messages">
+        <div class="loader"><div class="spinner"></div> Loading messages...</div>
+      </div>
+    </div>
+  `;
+}
+
+async function loadSessionMessages(card, sessionId) {
+  const container = card.querySelector(".session-messages");
+  // If already loaded, don't reload
+  if (container.dataset.loaded === sessionId) return;
+  container.dataset.loaded = sessionId;
+
+  try {
+    const data = await api(`/sessions/${sessionId}?user_id=${USER_ID}`);
+    const messages = data.messages || [];
+    if (messages.length === 0) {
+      container.innerHTML = '<p style="color:var(--text3);font-size:12px;text-align:center;padding:20px">No messages</p>';
+      return;
+    }
+    container.innerHTML = messages.map(m => `
+      <div class="msg-bubble ${m.role}">
+        <div class="msg-role">${m.role}</div>
+        <div class="msg-text">${esc(m.content)}</div>
+      </div>
+    `).join("");
+  } catch {
+    container.innerHTML = '<p style="color:var(--red);font-size:12px;text-align:center;padding:20px">Failed to load messages</p>';
+  }
+}
+
+// ── ENGINE CONFIG ──────────────────────────────────────────────
+const POPULAR_MODELS = [
+  { name: "qwen2.5:0.5b", size: "0.4 GB", note: "Fastest, lowest quality" },
+  { name: "qwen2.5:1.5b", size: "1.0 GB", note: "Fast, decent quality" },
+  { name: "qwen2.5:3b",   size: "1.9 GB", note: "Balanced (default)" },
+  { name: "qwen2.5:7b",   size: "4.7 GB", note: "Good quality" },
+  { name: "qwen2.5:14b",  size: "9.0 GB", note: "High quality" },
+  { name: "qwen2.5:32b",  size: "20 GB",  note: "Very high quality" },
+  { name: "llama3.2:3b",  size: "2.0 GB", note: "Meta Llama 3.2" },
+  { name: "mistral:7b",   size: "4.1 GB", note: "Mistral 7B" },
+  { name: "phi3:mini",    size: "2.2 GB", note: "Microsoft Phi-3 Mini" },
+];
+
+async function loadEngineConfig() {
+  try {
+    const cfg = await api("/config");
+    const engine = cfg.mode || "gemini";
+    document.getElementById("set-engine").value = engine;
+    onEngineChange();
+    await loadOllamaModels();
+    if (cfg.gen_model) document.getElementById("set-model").value = cfg.gen_model;
+  } catch {}
+}
+
+function onEngineChange() {
+  const engine = document.getElementById("set-engine").value;
+  document.getElementById("model-field").style.opacity = engine === "ollama" ? "1" : "0.35";
+  document.getElementById("model-field").style.pointerEvents = engine === "ollama" ? "" : "none";
+}
+
+async function loadOllamaModels() {
+  const sel = document.getElementById("set-model");
+  sel.innerHTML = '<option value="">Loading...</option>';
+  let downloaded = [];
+  try {
+    const data = await api("/ollama/models");
+    downloaded = data.models || [];
+    if (downloaded.length === 0) {
+      sel.innerHTML = '<option value="">No models downloaded yet</option>';
+    } else {
+      sel.innerHTML = downloaded.map(m => `<option value="${m.name}">${m.name} (${m.size_gb} GB)</option>`).join("");
+    }
+  } catch {
+    sel.innerHTML = '<option value="">Failed to load</option>';
+  }
+  renderPopularModels(downloaded.map(m => m.name));
+}
+
+function renderPopularModels(downloaded) {
+  const container = document.getElementById("popular-models-list");
+  if (!container) return;
+  container.innerHTML = POPULAR_MODELS.map(m => {
+    const isDl = downloaded.some(d => d.includes(m.name.split(":")[0]) && d.includes(m.name.split(":")[1]));
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;gap:12px">
+        <div style="flex:1">
+          <span style="color:var(--text1);font-size:12px;font-weight:600">${m.name}</span>
+          <span style="color:var(--text2);font-size:11px;margin-left:8px">${m.size}</span>
+          <span style="color:var(--text2);font-size:11px;margin-left:6px">— ${m.note}</span>
+        </div>
+        ${isDl
+          ? `<span style="color:var(--green);font-size:11px;font-weight:600">✓ Downloaded</span>`
+          : `<button class="btn" onclick="pullModel('${m.name}', this)" style="padding:4px 12px;font-size:11px">Download</button>`
+        }
+      </div>`;
+  }).join("");
+}
+
+async function pullModel(modelName, btn) {
+  btn.disabled = true;
+  btn.textContent = "Downloading...";
+  btn.style.background = "#4b5563";
+  showToast(`Downloading ${modelName} — this may take a while`);
+  try {
+    await api("/ollama/pull", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: modelName }),
+    });
+    btn.textContent = "✓ Done";
+    btn.style.background = "#059669";
+    showToast(`${modelName} downloaded!`);
+    await loadOllamaModels();
+  } catch {
+    btn.disabled = false;
+    btn.textContent = "Download";
+    btn.style.background = "";
+    showToast(`Failed to download ${modelName}`);
+  }
+}
+
+async function saveEngineConfig() {
+  const mode      = document.getElementById("set-engine").value;
+  const gen_model = document.getElementById("set-model").value;
+  try {
+    const cfg = await api("/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode, gen_model }),
+    });
+    document.getElementById("engine-status").innerHTML =
+      `<span style="color:var(--green)">✓ Engine set to <b>${cfg.mode}</b>${cfg.mode==="ollama" ? ` — model: <b>${cfg.gen_model}</b>` : ""}</span>`;
+    showToast(`Extraction: ${cfg.mode}${cfg.mode==="ollama" ? ` / ${cfg.gen_model}` : ""}`);
+  } catch {
+    document.getElementById("engine-status").innerHTML = '<span style="color:var(--red)">Failed to update</span>';
+  }
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────
+function saveSettings() {
+  SERVER  = document.getElementById("set-server").value.trim() || "http://localhost:8765";
+  USER_ID = document.getElementById("set-userid").value.trim() || "default";
+  localStorage.setItem("mnemos_server", SERVER);
+  localStorage.setItem("mnemos_user",   USER_ID);
+  document.getElementById("server-url-display").textContent = SERVER.replace(/^https?:\/\//, "");
+  document.getElementById("user-id-display").textContent    = USER_ID;
+  showToast("Settings saved");
+  checkHealth();
+  refreshAll();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function refreshAll() {
+  checkHealth();
+  loadStats();
+  loadMemories();
+  loadSessions();
+}
+
+function renderError(id, msg) {
+  document.getElementById(id).innerHTML =
+    `<div class="empty-state"><p style="color:var(--red)">${msg}</p></div>`;
+}
+
+function esc(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function showToast(text) {
+  const t = document.getElementById("toast");
+  t.textContent = text;
+  t.style.opacity = "1";
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = "0"; }, 3000);
+}
+
+// ── EXPORT MODAL ─────────────────────────────────────────────
+let _exportData = null; // { session_id, title, app_id, messages }
+
+async function openExportModal(sessionId, title, appId) {
+  try {
+    const data = await api(`/sessions/${sessionId}?user_id=${USER_ID}`);
+    _exportData = {
+      session_id:  sessionId,
+      title:       title || data.title || "Untitled",
+      app_id:      appId || data.app_id,
+      exported_at: new Date().toISOString(),
+      messages:    data.messages || [],
+    };
+  } catch {
+    showToast("Failed to load session");
+    return;
+  }
+
+  document.getElementById("modal-title").textContent = _exportData.title;
+  document.getElementById("modal-meta").textContent  =
+    `${appIcon(_exportData.app_id)} ${_exportData.app_id}  ·  ${_exportData.messages.length} messages`;
+
+  // Raw JSON tab
+  document.getElementById("json-box").textContent = JSON.stringify(_exportData, null, 2);
+
+  // Context preview (default: "Any AI")
+  document.getElementById("context-preview").textContent = buildContext("generic");
+
+  // Messages tab
+  const msgs = _exportData.messages;
+  document.getElementById("modal-messages").innerHTML = msgs.length === 0
+    ? '<p style="color:var(--text3);text-align:center;padding:30px">No messages</p>'
+    : msgs.map(m => `
+        <div class="msg-bubble ${m.role}">
+          <div class="msg-role">${m.role}</div>
+          <div class="msg-text">${esc(m.content)}</div>
+        </div>
+      `).join("");
+
+  switchTab("raw");
+  document.getElementById("export-modal").classList.add("open");
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById("export-modal")) return;
+  document.getElementById("export-modal").classList.remove("open");
+}
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") document.getElementById("export-modal").classList.remove("open");
+});
+
+function switchTab(name) {
+  ["raw","context","chat"].forEach(t => {
+    document.getElementById("tab-" + t).classList.toggle("active", t === name);
+    document.getElementById("panel-" + t).classList.toggle("active", t === name);
+  });
+}
+
+function buildContext(platform) {
+  if (!_exportData) return "";
+  const { title, app_id, messages } = _exportData;
+
+  const intros = {
+    chatgpt: `The following is a conversation I had on ${app_id}. Please continue helping me from where we left off.\n\nConversation title: "${title}"\n`,
+    claude:  `<context>\nHere is a previous conversation I had on ${app_id}. Use this as context to continue our discussion.\nTitle: "${title}"\n</context>\n`,
+    gemini:  `I'm sharing a previous conversation from ${app_id} so you can continue where we left off.\nTitle: "${title}"\n`,
+    generic: `Previous conversation from ${app_id} — "${title}" — please continue from where we left off:\n`,
+  };
+  const intro = intros[platform] || intros.generic;
+  const history = messages.map(m =>
+    `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`
+  ).join("\n\n");
+  return `${intro}\n${history}`;
+}
+
+function copyForPlatform(platform) {
+  const text = buildContext(platform);
+  document.getElementById("context-preview").textContent = text;
+  navigator.clipboard.writeText(text).then(() => showToast(`Copied for ${platform}!`));
+}
+
+function copyJSON() {
+  if (!_exportData) return;
+  navigator.clipboard.writeText(JSON.stringify(_exportData, null, 2))
+    .then(() => showToast("JSON copied to clipboard"));
+}
+
+function downloadJSON() {
+  if (!_exportData) return;
+  const blob = new Blob([JSON.stringify(_exportData, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `mnemos-session-${_exportData.session_id}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast("Downloaded!");
+}
+
+// ── START ─────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

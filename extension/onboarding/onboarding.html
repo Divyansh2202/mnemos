@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Welcome to MnemOS</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0f0f1a;
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .card {
+      background: #13131f;
+      border: 1px solid #1e1e3a;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 520px;
+      padding: 40px;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 800;
+      color: #a78bfa;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .tagline {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    /* Steps indicator */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 36px;
+    }
+    .step-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      background: #1e1e3a; color: #4b5563;
+      border: 2px solid #2d2d5a;
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .step-dot.active  { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+    .step-dot.done    { background: #059669; color: #fff; border-color: #059669; }
+    .step-line {
+      flex: 1; height: 2px;
+      background: #2d2d5a;
+      transition: background 0.3s;
+    }
+    .step-line.done { background: #059669; }
+
+    .step-label {
+      font-size: 11px; color: #6b7280;
+      text-align: center;
+      margin-top: 6px;
+    }
+    .steps-row { margin-bottom: 36px; }
+    .steps-labels {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 0px;
+    }
+    .step-label-item {
+      font-size: 10px;
+      color: #4b5563;
+      text-align: center;
+      width: 60px;
+      transition: color 0.3s;
+    }
+    .step-label-item.active { color: #a78bfa; }
+    .step-label-item.done   { color: #059669; }
+
+    /* Panels */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .panel-title {
+      font-size: 18px; font-weight: 700;
+      color: #e2e8f0; margin-bottom: 8px;
+    }
+    .panel-sub {
+      font-size: 13px; color: #6b7280;
+      margin-bottom: 24px; line-height: 1.6;
+    }
+
+    /* Status box */
+    .status-box {
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .status-box.checking { background: #1e1b4b; border: 1px solid #2d2d5a; }
+    .status-box.online   { background: #052e16; border: 1px solid #059669; }
+    .status-box.offline  { background: #1c0a0a; border: 1px solid #7f1d1d; }
+
+    .status-icon { font-size: 28px; flex-shrink: 0; }
+    .status-text h3 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .status-text p  { font-size: 12px; color: #9ca3af; }
+
+    /* Engine options */
+    .engine-options { display: flex; gap: 12px; margin-bottom: 20px; }
+    .engine-card {
+      flex: 1; padding: 16px;
+      background: #1a1a2e;
+      border: 2px solid #2d2d5a;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .engine-card:hover   { border-color: #7c3aed; }
+    .engine-card.selected { border-color: #7c3aed; background: #1e1b4b; }
+    .engine-card .icon  { font-size: 24px; margin-bottom: 8px; }
+    .engine-card .name  { font-size: 13px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; }
+    .engine-card .desc  { font-size: 11px; color: #6b7280; line-height: 1.4; }
+
+    /* Model list */
+    .model-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; max-height: 300px; overflow-y: auto; }
+    .model-row {
+      display: flex; align-items: center;
+      background: #1a1a2e; border: 1px solid #2d2d5a;
+      border-radius: 8px; padding: 10px 14px; gap: 12px;
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .model-row:hover    { border-color: #7c3aed; }
+    .model-row.selected { border-color: #7c3aed; background: #1e1b4b; }
+    .model-row.downloaded { border-color: #059669; }
+    .model-info { flex: 1; }
+    .model-name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+    .model-meta { font-size: 11px; color: #6b7280; margin-top: 2px; }
+    .model-badge {
+      font-size: 10px; font-weight: 600; padding: 2px 8px;
+      border-radius: 10px; white-space: nowrap;
+    }
+    .badge-dl  { background: #052e16; color: #34d399; }
+    .badge-size { background: #1e1b4b; color: #a78bfa; }
+
+    /* Input */
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 12px; color: #9ca3af; margin-bottom: 6px; }
+    .field input {
+      width: 100%; background: #1a1a2e;
+      border: 1px solid #2d2d5a; border-radius: 8px;
+      padding: 10px 14px; color: #e2e8f0; font-size: 13px; outline: none;
+    }
+    .field input:focus { border-color: #7c3aed; }
+
+    /* Buttons */
+    .btn {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #7c3aed; color: #fff; }
+    .btn-primary:hover { background: #6d28d9; }
+    .btn-primary:disabled { background: #4b5563; cursor: not-allowed; }
+    .btn-outline {
+      background: none; color: #a78bfa;
+      border: 1px solid #2d2d5a; margin-top: 8px;
+    }
+    .btn-outline:hover { background: #1e1b4b; border-color: #7c3aed; }
+    .btn-green { background: #059669; color: #fff; }
+    .btn-green:hover { background: #047857; }
+
+    /* Progress bar */
+    .progress-wrap {
+      background: #1a1a2e; border-radius: 6px;
+      height: 6px; margin: 12px 0; overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%; background: #7c3aed;
+      border-radius: 6px; width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    /* Done screen */
+    .done-icon { font-size: 56px; text-align: center; margin-bottom: 16px; }
+    .feature-list { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+    .feature-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: #1a1a2e; border: 1px solid #1e1e3a;
+      border-radius: 8px; padding: 12px 14px;
+    }
+    .feature-item .fi-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .feature-item .fi-title { font-size: 13px; font-weight: 600; color: #e2e8f0; margin-bottom: 2px; }
+    .feature-item .fi-desc  { font-size: 11px; color: #6b7280; line-height: 1.4; }
+
+    .hint { font-size: 12px; color: #4b5563; margin-top: 12px; text-align: center; }
+
+    /* Download step */
+    .download-btn-row { display: flex; gap: 8px; margin-top: 12px; }
+    .dl-btn {
+      flex: 1; padding: 10px; border: none; border-radius: 8px;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      background: #7c3aed; color: #fff; transition: all 0.2s;
+    }
+    .dl-btn:disabled { background: #4b5563; cursor: not-allowed; }
+    .dl-btn.done-btn { background: #059669; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2d2d5a; border-radius: 4px; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">⬡ MnemOS</div>
+  <div class="tagline">Universal Memory for AI — set up in 2 minutes</div>
+
+  <!-- Step indicators -->
+  <div class="steps-row">
+    <div class="steps">
+      <div class="step-dot active" id="dot-1">1</div>
+      <div class="step-line" id="line-1"></div>
+      <div class="step-dot" id="dot-2">2</div>
+      <div class="step-line" id="line-2"></div>
+      <div class="step-dot" id="dot-3">3</div>
+    </div>
+    <div class="steps-labels">
+      <div class="step-label-item active" id="lbl-1">Connect</div>
+      <div class="step-label-item" id="lbl-2">Engine</div>
+      <div class="step-label-item" id="lbl-3">Done</div>
+    </div>
+  </div>
+
+  <!-- STEP 1: Server check -->
+  <div class="panel active" id="panel-1">
+    <div class="panel-title">Connect to MnemOS Server</div>
+    <div class="panel-sub">MnemOS needs a local server running on your machine to store and retrieve memories.</div>
+
+    <div class="status-box checking" id="server-status-box">
+      <div class="status-icon" id="server-icon">⏳</div>
+      <div class="status-text">
+        <h3 id="server-status-title">Checking server...</h3>
+        <p id="server-status-sub">Looking for MnemOS at localhost:8765</p>
+      </div>
+    </div>
+
+    <div id="offline-help" style="display:none">
+      <div style="font-size:13px;color:#9ca3af;margin-bottom:12px">
+        Download and run the MnemOS server app on your computer:
+      </div>
+      <a id="download-server-btn" href="https://github.com/yourusername/mnemos/releases/latest" target="_blank">
+        <button class="btn btn-primary" style="margin-bottom:8px">⬇ Download MnemOS Server</button>
+      </a>
+      <div style="font-size:11px;color:#4b5563;text-align:center;margin-bottom:16px">
+        After installing, launch the MnemOS app and come back here.
+      </div>
+    </div>
+
+    <button class="btn btn-outline" id="check-again-btn" onclick="checkServer()">↻ Check Again</button>
+    <button class="btn btn-primary" id="step1-next-btn" style="display:none;margin-top:8px" onclick="goStep(2)">Continue →</button>
+  </div>
+
+  <!-- STEP 2: Engine selection -->
+  <div class="panel" id="panel-2">
+    <div class="panel-title">Choose Your AI Engine</div>
+    <div class="panel-sub">How should MnemOS extract memories from your conversations?</div>
+
+    <div class="engine-options">
+      <div class="engine-card selected" id="card-gemini" onclick="selectEngine('gemini')">
+        <div class="icon">✦</div>
+        <div class="name">Gemini Flash</div>
+        <div class="desc">Fast · Cloud · Needs API key</div>
+      </div>
+      <div class="engine-card" id="card-ollama" onclick="selectEngine('ollama')">
+        <div class="icon">🦙</div>
+        <div class="name">Ollama</div>
+        <div class="desc">Private · Local · No internet</div>
+      </div>
+    </div>
+
+    <!-- Gemini panel -->
+    <div id="gemini-setup">
+      <div class="field">
+        <label>Gemini API Key <span style="color:#6b7280;font-size:10px">— free at aistudio.google.com</span></label>
+        <input type="password" id="gemini-key-input" placeholder="AIzaSy..." />
+      </div>
+      <a href="https://aistudio.google.com/app/apikey" target="_blank"
+         style="font-size:11px;color:#a78bfa;display:block;margin-bottom:16px">
+        Get a free API key →
+      </a>
+    </div>
+
+    <!-- Ollama panel -->
+    <div id="ollama-setup" style="display:none">
+      <div style="font-size:12px;color:#9ca3af;margin-bottom:10px">
+        Select a model. Click <b style="color:#a78bfa">Download</b> if you haven't downloaded it yet.
+      </div>
+      <div class="model-list" id="model-list"></div>
+    </div>
+
+    <button class="btn btn-primary" id="step2-btn" onclick="applyEngine()">Save & Continue →</button>
+    <button class="btn btn-outline" onclick="goStep(1)">← Back</button>
+  </div>
+
+  <!-- STEP 3: Done -->
+  <div class="panel" id="panel-3">
+    <div class="done-icon">🎉</div>
+    <div class="panel-title" style="text-align:center">You're all set!</div>
+    <div class="panel-sub" style="text-align:center">MnemOS will now silently remember everything across your AI conversations.</div>
+
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="fi-icon">🧠</div>
+        <div>
+          <div class="fi-title">Auto Memory</div>
+          <div class="fi-desc">After each conversation, MnemOS extracts and stores key facts about you.</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">⚡</div>
+        <div>
+          <div class="fi-title">Smart Injection</div>
+          <div class="fi-desc">Relevant memories are silently added to your messages so AI always has context.</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🔒</div>
+        <div>
+          <div class="fi-title">Fully Private</div>
+          <div class="fi-desc">Everything stays on your machine. No data sent to MnemOS servers.</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-green" onclick="openChatGPT()">Open ChatGPT and try it →</button>
+    <div class="hint">Or open Claude, Gemini — MnemOS works on all of them.</div>
+  </div>
+</div>
+
+<script>
+const SERVER = "http://localhost:8765";
+
+const MODELS = [
+  { name: "qwen2.5:0.5b", size: "0.4 GB", note: "Fastest · Lightest" },
+  { name: "qwen2.5:1.5b", size: "1.0 GB", note: "Fast · Good quality" },
+  { name: "qwen2.5:3b",   size: "1.9 GB", note: "Balanced ⭐ Recommended" },
+  { name: "qwen2.5:7b",   size: "4.7 GB", note: "High quality" },
+  { name: "qwen2.5:14b",  size: "9.0 GB", note: "Very high quality" },
+  { name: "llama3.2:3b",  size: "2.0 GB", note: "Meta Llama 3.2" },
+  { name: "mistral:7b",   size: "4.1 GB", note: "Mistral 7B" },
+  { name: "phi3:mini",    size: "2.2 GB", note: "Microsoft Phi-3" },
+];
+
+let selectedEngine = "gemini";
+let selectedModel  = "qwen2.5:3b";
+let downloadedModels = [];
+
+// ── Step navigation ──────────────────────────────────────────
+function goStep(n) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.getElementById("panel-" + n).classList.add("active");
+
+  [1,2,3].forEach(i => {
+    const dot = document.getElementById("dot-" + i);
+    const lbl = document.getElementById("lbl-" + i);
+    dot.className = "step-dot" + (i < n ? " done" : i === n ? " active" : "");
+    lbl.className = "step-label-item" + (i < n ? " done" : i === n ? " active" : "");
+    if (i < 3) {
+      const line = document.getElementById("line-" + i);
+      line.className = "step-line" + (i < n ? " done" : "");
+    }
+  });
+
+  if (n === 2) loadOllamaModels();
+}
+
+// ── Step 1: Server check ─────────────────────────────────────
+async function checkServer() {
+  setServerStatus("checking");
+  try {
+    const r = await fetch(`${SERVER}/health`, { signal: AbortSignal.timeout(3000) });
+    if (r.ok) {
+      setServerStatus("online");
+      document.getElementById("step1-next-btn").style.display = "block";
+      document.getElementById("check-again-btn").style.display = "none";
+      document.getElementById("offline-help").style.display = "none";
+    } else {
+      setServerStatus("offline");
+    }
+  } catch {
+    setServerStatus("offline");
+  }
+}
+
+function setServerStatus(state) {
+  const box   = document.getElementById("server-status-box");
+  const icon  = document.getElementById("server-icon");
+  const title = document.getElementById("server-status-title");
+  const sub   = document.getElementById("server-status-sub");
+  const help  = document.getElementById("offline-help");
+
+  box.className = "status-box " + state;
+  if (state === "checking") {
+    icon.textContent  = "⏳";
+    title.textContent = "Checking server...";
+    sub.textContent   = "Looking for MnemOS at localhost:8765";
+    help.style.display = "none";
+  } else if (state === "online") {
+    icon.textContent  = "✅";
+    title.textContent = "Server is running!";
+    sub.textContent   = "MnemOS is ready at localhost:8765";
+    help.style.display = "none";
+  } else {
+    icon.textContent  = "❌";
+    title.textContent = "Server not found";
+    sub.textContent   = "Please download and start the MnemOS server app";
+    help.style.display = "block";
+  }
+}
+
+// ── Step 2: Engine ───────────────────────────────────────────
+function selectEngine(engine) {
+  selectedEngine = engine;
+  document.getElementById("card-gemini").classList.toggle("selected", engine === "gemini");
+  document.getElementById("card-ollama").classList.toggle("selected", engine === "ollama");
+  document.getElementById("gemini-setup").style.display  = engine === "gemini" ? "" : "none";
+  document.getElementById("ollama-setup").style.display  = engine === "ollama" ? "" : "none";
+}
+
+async function loadOllamaModels() {
+  try {
+    const r = await fetch(`${SERVER}/ollama/models`);
+    const data = await r.json();
+    downloadedModels = (data.models || []).map(m => m.name);
+  } catch {
+    downloadedModels = [];
+  }
+  renderModels();
+}
+
+function renderModels() {
+  const list = document.getElementById("model-list");
+  list.innerHTML = MODELS.map(m => {
+    const isDl = downloadedModels.some(d => d === m.name || d.startsWith(m.name));
+    return `
+      <div class="model-row ${isDl ? "downloaded" : ""} ${m.name === selectedModel ? "selected" : ""}"
+           onclick="selectModel('${m.name}', this)">
+        <div class="model-info">
+          <div class="model-name">${m.name}</div>
+          <div class="model-meta">${m.note}</div>
+        </div>
+        <span class="model-badge badge-size">${m.size}</span>
+        ${isDl
+          ? `<span class="model-badge badge-dl">✓ Ready</span>`
+          : `<button class="dl-btn" id="dl-${m.name.replace(":","-")}"
+               onclick="event.stopPropagation(); downloadModel('${m.name}', this)">
+               ⬇ Download
+             </button>`
+        }
+      </div>`;
+  }).join("");
+}
+
+function selectModel(name, el) {
+  selectedModel = name;
+  document.querySelectorAll(".model-row").forEach(r => r.classList.remove("selected"));
+  el.classList.add("selected");
+}
+
+async function downloadModel(modelName, btn) {
+  btn.disabled = true;
+  btn.textContent = "Downloading...";
+  try {
+    await fetch(`${SERVER}/ollama/pull`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: modelName }),
+    });
+    btn.textContent = "✓ Ready";
+    btn.className = "dl-btn done-btn";
+    btn.closest(".model-row").classList.add("downloaded");
+    downloadedModels.push(modelName);
+    selectedModel = modelName;
+    document.querySelectorAll(".model-row").forEach(r => r.classList.remove("selected"));
+    btn.closest(".model-row").classList.add("selected");
+  } catch {
+    btn.disabled = false;
+    btn.textContent = "⬇ Download";
+  }
+}
+
+async function applyEngine() {
+  const btn = document.getElementById("step2-btn");
+  btn.disabled = true;
+  btn.textContent = "Saving...";
+
+  const payload = { mode: selectedEngine };
+  if (selectedEngine === "gemini") {
+    const key = document.getElementById("gemini-key-input").value.trim();
+    if (!key) {
+      btn.disabled = false;
+      btn.textContent = "Save & Continue →";
+      document.getElementById("gemini-key-input").style.borderColor = "#ef4444";
+      return;
+    }
+    // Save key to server env via config endpoint
+    payload.gemini_key = key;
+  } else {
+    payload.gen_model = selectedModel;
+  }
+
+  try {
+    await fetch(`${SERVER}/config`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    goStep(3);
+  } catch {
+    btn.disabled = false;
+    btn.textContent = "Save & Continue →";
+  }
+}
+
+function openChatGPT() {
+  window.open("https://chatgpt.com", "_blank");
+}
+
+// ── Init ─────────────────────────────────────────────────────
+checkServer();
+</script>
+</body>
+</html>

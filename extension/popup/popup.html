@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MnemOS</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="header">
+    <span class="logo">⬡ MnemOS</span>
+    <span id="status-dot" class="dot dot-off" title="Server status"></span>
+  </div>
+
+  <div class="section">
+    <div class="label">Server</div>
+    <input id="server-url" type="text" placeholder="http://localhost:8765" />
+    <div class="label" style="margin-top:8px">User ID</div>
+    <input id="user-id" type="text" placeholder="default" />
+    <button id="save-btn">Save</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div id="queue-bar" class="queue-bar" style="display:none">
+    <span id="queue-text">⏳ 0 conversations queued</span>
+  </div>
+
+  <div class="section">
+    <div class="label">Memories <span id="mem-count" class="badge">0</span></div>
+    <div id="memory-list" class="memory-list">
+      <div class="empty">Loading...</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="label">Extraction Model</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <select id="engine-select" style="flex:1">
+        <option value="gemini">Gemini Flash</option>
+        <option value="ollama">Ollama (local)</option>
+      </select>
+      <select id="model-select" style="flex:1.5;display:none"></select>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <button id="model-apply-btn" style="flex:1">Apply</button>
+      <button id="model-download-btn" style="flex:1;display:none">⬇ Download</button>
+    </div>
+    <div id="model-status" style="font-size:11px;color:#6b7280;margin-top:4px"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section" style="padding-top:10px;padding-bottom:10px;display:flex;gap:8px">
+    <button id="dashboard-btn" style="flex:1">⬡ Dashboard</button>
+    <button id="sessions-btn" style="flex:1">◎ Sessions</button>
+  </div>
+
+  <div class="footer">
+    <label class="toggle-label">
+      <input type="checkbox" id="enabled-toggle" checked />
+      Auto-capture
+    </label>
+    <button id="refresh-btn" class="icon-btn" title="Refresh">↻</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
