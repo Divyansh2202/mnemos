@@ -2,6 +2,12 @@
 
 ---
 
+## Note
+
+This is not a production-ready system. I saw a problem, thought about how it should work, and built an initial implementation covering all the core pieces — server, browser extension, CLI, Python SDK, dashboard, and MCP integration. It works end to end but is not optimized or hardened for scale. Think of it as a working proof of concept that solves a real problem.
+
+---
+
 ## The Problem
 
 Every time you start a new conversation with ChatGPT or Claude, the AI has **no idea who you are**.
