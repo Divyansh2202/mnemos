@@ -103,6 +103,10 @@ Or via API directly:
 curl http://localhost:8765/sessions/chatgpt_default?user_id=default
 ```
 
+**You can paste this directly into any AI platform.**
+
+MnemOS extracts the key facts automatically — but sometimes you want to give an AI the full picture. A long technical discussion, a detailed planning session, a conversation with a lot of back-and-forth nuance — extracted facts may not capture everything. In those cases, export the raw conversation and paste it directly into ChatGPT, Claude, or Gemini as context. The AI gets the complete history, not just a summary. This gives you full control over what context you share and when.
+
 ---
 
 ## Architecture
