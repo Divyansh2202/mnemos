@@ -515,6 +515,10 @@
       animation: spin 0.7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 6px #34d399; }
+      50% { opacity: 0.4; box-shadow: 0 0 2px #34d399; }
+    }
 
     /* ── PAGINATION ── */
     .pagination {
@@ -865,8 +869,11 @@
 
     <!-- SESSIONS PAGE -->
     <div class="page" id="page-sessions">
-      <div class="page-title">Sessions</div>
-      <div class="page-sub">Raw conversation history</div>
+      <div class="page-title">
+        Sessions
+        <span id="sess-live-dot" title="Auto-refreshing every 5s" style="display:none;margin-left:10px;width:8px;height:8px;border-radius:50%;background:#34d399;vertical-align:middle;box-shadow:0 0 6px #34d399;animation:pulse 1.5s infinite;"></span>
+      </div>
+      <div class="page-sub">Raw conversation history · auto-refreshes every 5s when open</div>
 
       <div class="toolbar">
         <div class="search-wrap">
@@ -1035,6 +1042,8 @@ function init() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────
+let _sessRefreshTimer = null;
+
 function showPage(name) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
@@ -1042,6 +1051,16 @@ function showPage(name) {
   document.getElementById("nav-" + name).classList.add("active");
   location.hash = name === "overview" ? "" : name;
   if (name === "settings") loadEngineConfig();
+
+  // Auto-refresh sessions tab every 5s while it's open
+  clearInterval(_sessRefreshTimer);
+  if (name === "sessions") {
+    loadSessions();
+    _sessRefreshTimer = setInterval(loadSessions, 5000);
+    document.getElementById("sess-live-dot").style.display = "inline-block";
+  } else {
+    document.getElementById("sess-live-dot").style.display = "none";
+  }
 }
 
 // ── API ───────────────────────────────────────────────────────
@@ -1249,12 +1268,25 @@ function renderSessions() {
   const container = document.getElementById("sess-cards");
   const filtered  = getFilteredSessions();
 
+  // Remember which session card was open before rebuilding HTML
+  const prevOpen = container.querySelector(".session-card.open");
+  const openSessionId = prevOpen ? prevOpen.dataset.sessionId : null;
+
   if (filtered.length === 0) {
     container.innerHTML = `<div class="empty-state"><div class="big">◎</div><p>No sessions yet — conversations will appear here after you chat</p></div>`;
     return;
   }
 
   container.innerHTML = filtered.map(s => sessionCard(s)).join("");
+
+  // Restore previously open card and re-fetch fresh messages
+  if (openSessionId) {
+    const card = container.querySelector(`[data-session-id="${openSessionId}"]`);
+    if (card) {
+      card.classList.add("open");
+      loadSessionMessages(card, openSessionId);
+    }
+  }
 
   container.querySelectorAll(".session-header").forEach(h => {
     h.addEventListener("click", (e) => {
@@ -1311,9 +1343,8 @@ function sessionCard(s) {
 
 async function loadSessionMessages(card, sessionId) {
   const container = card.querySelector(".session-messages");
-  // If already loaded, don't reload
-  if (container.dataset.loaded === sessionId) return;
-  container.dataset.loaded = sessionId;
+  // Always re-fetch so auto-refresh shows latest messages
+  container.innerHTML = '<div class="loader"><div class="spinner"></div> Loading messages...</div>';
 
   try {
     const data = await api(`/sessions/${sessionId}?user_id=${USER_ID}`);

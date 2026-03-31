@@ -263,11 +263,14 @@ class MemoryStore:
         conn.commit()
         conn.close()
 
-    def delete(self, memory_id: str):
+    def delete(self, memory_id: str) -> bool:
         conn = self._get_conn()
-        conn.cursor().execute("DELETE FROM memories WHERE id = %s", (memory_id,))
+        cur  = conn.cursor()
+        cur.execute("DELETE FROM memories WHERE id = %s", (memory_id,))
+        deleted = cur.rowcount > 0
         conn.commit()
         conn.close()
+        return deleted
 
     def get_all(self, user_id: str = "default", limit: int = 100) -> list[dict]:
         conn = self._get_conn()

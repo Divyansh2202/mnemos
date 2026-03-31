@@ -101,6 +101,20 @@ function interceptSend() {
     e.preventDefault();
     e.stopImmediatePropagation();
 
+    // ── Real-time save: persist user message immediately ──────────
+    const sessionId = getSessionId();
+    if (sessionId) {
+      const existing = cleanMessages(getMessages());
+      const title    = existing.length === 0 ? userText.slice(0, 60) : "";
+      sendMsg({
+        type:      "SAVE_SESSION",
+        messages:  [...existing, { role: "user", content: userText }],
+        appId:     "chatgpt",
+        sessionId,
+        title,
+      }, null);
+    }
+
     const injected = await injectMemoryContext(userText);
     if (injected) {
       if (input.isContentEditable) {
@@ -137,6 +151,20 @@ function interceptSend() {
 
     e.preventDefault();
     e.stopImmediatePropagation();
+
+    // ── Real-time save: persist user message immediately ──────────
+    const sessionId2 = getSessionId();
+    if (sessionId2) {
+      const existing2 = cleanMessages(getMessages());
+      const title2    = existing2.length === 0 ? userText.slice(0, 60) : "";
+      sendMsg({
+        type:      "SAVE_SESSION",
+        messages:  [...existing2, { role: "user", content: userText }],
+        appId:     "chatgpt",
+        sessionId: sessionId2,
+        title:     title2,
+      }, null);
+    }
 
     const injected = await injectMemoryContext(userText);
     if (injected) {

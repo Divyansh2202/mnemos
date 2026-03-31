@@ -110,11 +110,32 @@ def get_all(user_id: str = "default", limit: int = 100):
 
 @app.delete("/memory/{memory_id}")
 def delete_memory(memory_id: str):
-    store.delete(memory_id)
+    found = store.delete(memory_id)
+    if not found:
+        raise HTTPException(status_code=404, detail=f"Memory {memory_id} not found")
     return {"status": "deleted", "id": memory_id}
 
 
 # ─── SESSIONS ─────────────────────────────────────────────────
+
+class SessionSaveRequest(BaseModel):
+    session_id: str
+    messages:   list[dict]
+    user_id:    str = "default"
+    app_id:     str = "unknown"
+    title:      str = ""
+
+@app.post("/sessions")
+def save_session(req: SessionSaveRequest):
+    """Save/upsert raw conversation — no extraction, instant, real-time."""
+    result = store.upsert_session(
+        session_id = req.session_id,
+        messages   = req.messages,
+        user_id    = req.user_id,
+        app_id     = req.app_id,
+        title      = req.title,
+    )
+    return result
 
 @app.get("/sessions")
 def list_sessions(user_id: str = "default", app_id: str = None, limit: int = 50):
