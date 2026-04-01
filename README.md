@@ -10,20 +10,14 @@ This is not a production-ready system. I saw a problem, thought about how it sho
 
 ## The Problem
 
-Every time you start a new conversation with ChatGPT or Claude, the AI has **no idea who you are**.
-
-You mention you work in Python. Next session — you explain it again.
-You say you have a dog named Bruno. Next session — gone.
-You describe your keyboard preference. Next session — you type it again.
-
-AI assistants have **no persistent memory**. Every session is a blank slate.
-You waste time re-explaining yourself. The AI gives generic answers instead of personalized ones.
-
-**And switching platforms means starting from zero.**
+**Switching platforms means starting from zero.**
 
 You had a long conversation on ChatGPT — your preferences, your projects, everything it learned about you.
 Now you open Claude. It has no idea about any of it. All that context is gone.
 There is no way to carry memory from one AI platform to another.
+
+AI assistants have **no persistent memory**. Every session is a blank slate.
+You waste time re-explaining yourself. The AI gives generic answers instead of personalized ones.
 
 **And your raw conversations are trapped.**
 
@@ -31,6 +25,12 @@ Every question you asked, every answer you got — locked inside each platform.
 You cannot export it, search it, or use it anywhere else.
 
 This is not a ChatGPT problem. It is not a Claude problem. It is a **fundamental missing layer** in every AI interface.
+
+And most common problem **every time you start a new conversation with ChatGPT or Claude, the AI has **no idea who you are**.
+
+You mention you work in Python. Next session — you explain it again.
+You say you have a dog named Bruno. Next session — gone.
+You describe your keyboard preference. Next session — you type it again.
 
 ---
 
