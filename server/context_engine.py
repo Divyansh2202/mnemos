@@ -3,21 +3,67 @@ import json
 import requests
 from protocol.types import Memory, MemoryType
 
-EXTRACT_PROMPT = """You are a memory extraction system. Extract ALL facts worth remembering from this conversation.
+EXTRACT_PROMPT = """You are an expert memory extraction AI for a personal AI assistant. Your job is to carefully analyze a conversation and extract every meaningful fact worth remembering about the user.
 
-Return ONLY valid JSON in this exact format:
-{{"memories": [{{"content": "...", "type": "semantic", "confidence": 0.9, "tags": []}}]}}
+Think through this step by step:
 
-Types: semantic (facts/preferences/knowledge), episodic (events/experiences), procedural (how-to/workflows)
+=== STEP 1: SCAN for all user facts ===
+Read every line carefully. Identify anything the user reveals about themselves:
+- Identity: profession, age, location, background, name (use only to refer as "User")
+- Skills & knowledge: programming languages, frameworks, tools, technologies they know
+- Preferences: likes, dislikes, favorites, things they avoid, editor/theme/OS choices
+- Goals & plans: what they want to learn, build, create, or achieve
+- Opinions & decisions: views they hold, choices they've made, things they prefer
+- Events & experiences: things that happened to them (episodic memories)
+- Workflows & habits: how they do things, their processes, routines (procedural)
+- Projects & code plans: if user is planning a project, discussing architecture, designing a system, writing or planning code — extract WHAT they are building, WHAT stack/language/tools they plan to use, WHAT the project does
+- Learning path: topics they are currently studying, roadmaps they are following, courses or resources they mention
 
-Rules:
-- ALWAYS start every memory with "User" — never use the person's real name (e.g. "User knows Python", NOT "Divyansh knows Python")
-- Extract EVERY preference, hobby, tool, skill, topic, decision, and fact mentioned
-- User likes/dislikes/loves/hates something = ALWAYS extract it
-- If user mentions a topic (music, coding, food, etc.) = extract it
-- Be generous — extract as much as possible
+=== STEP 2: FILTER — keep only real user facts ===
+Keep: anything that reveals something stable or meaningful about the user
+Discard: generic greetings ("hi", "okay", "thanks"), pure questions with no user context, filler phrases, AI responses about itself
+Example — "start with step 1" alone reveals nothing → skip it
+Example — "I am building a REST API in FastAPI with PostgreSQL" → extract it
 
-Conversation:
+=== STEP 3: WRITE memories — STRICT RULES (never break these) ===
+RULE 1 (CRITICAL): Every single memory MUST start with the word "User"
+  CORRECT: "User knows Python"
+  CORRECT: "User is building a REST API using FastAPI and PostgreSQL"
+  CORRECT: "User is planning a project that uses React frontend and Node.js backend"
+  WRONG:   "Divyansh knows Python"       ← real name, forbidden
+  WRONG:   "I know Python"               ← first person, forbidden
+  WRONG:   "The user said they know Python" ← indirect, forbidden
+
+RULE 2: Write in third-person declarative form — no "said", "mentioned", "told me"
+  CORRECT: "User prefers VSCode with Vim keybindings"
+  WRONG:   "User said they prefer VSCode"
+
+RULE 3: Be specific and concrete — never vague
+  CORRECT: "User is learning backend development using Python and FastAPI"
+  WRONG:   "User is learning something about programming"
+
+RULE 4: One distinct fact per memory entry — do not combine multiple facts
+
+RULE 5: If the conversation contains NO meaningful facts about the user, return {{"memories": []}}
+
+=== STEP 4: ASSIGN metadata ===
+For each memory decide:
+- type:
+    "semantic"   → facts, skills, preferences, knowledge, current projects/plans
+    "episodic"   → past events or experiences ("User attended...", "User built X last year")
+    "procedural" → how-to knowledge, workflows, step-by-step processes the user follows
+- confidence:
+    0.95 → user stated it directly and clearly
+    0.80 → clearly implied from context
+    0.65 → inferred, less certain
+- tags: 1-3 short lowercase tags e.g. ["skill", "python"], ["project", "backend"], ["preference", "editor"]
+
+=== STEP 5: OUTPUT — raw JSON only ===
+No explanation. No markdown. No code fences (no ```). No extra text before or after.
+Return exactly this format:
+{{"memories": [{{"content": "User ...", "type": "semantic", "confidence": 0.9, "tags": ["tag1", "tag2"]}}]}}
+
+Conversation to analyze:
 {conversation}
 
 JSON:"""
@@ -53,6 +99,21 @@ def set_config(key: str, value: str):
 _load_config()
 
 
+def _detect_gpu() -> bool:
+    """Return True if an NVIDIA GPU is available via nvidia-smi."""
+    import subprocess
+    try:
+        r = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+            capture_output=True, text=True, timeout=3
+        )
+        return r.returncode == 0 and bool(r.stdout.strip())
+    except Exception:
+        return False
+
+GPU_AVAILABLE: bool = _detect_gpu()
+
+
 class ContextEngine:
 
     def __init__(self):
@@ -61,7 +122,8 @@ class ContextEngine:
         # defaults from env — can be overridden at runtime via set_config()
         _config.setdefault("mode",      os.getenv("MNEMOS_EXTRACTION", "ollama"))
         _config.setdefault("gen_model", os.getenv("OLLAMA_GEN_MODEL",  "qwen2.5:3b"))
-        print(f"[ContextEngine] Mode: {_config['mode']} | Model: {_config['gen_model']}")
+        gpu_label = "GPU (CUDA)" if GPU_AVAILABLE else "CPU (no GPU found)"
+        print(f"[ContextEngine] Mode: {_config['mode']} | Model: {_config['gen_model']} | Device: {gpu_label}")
 
     @property
     def mode(self):      return _config.get("mode", "ollama")
@@ -91,7 +153,10 @@ class ContextEngine:
                 "model":   self.gen_model,
                 "prompt":  prompt,
                 "stream":  False,
-                "options": {"temperature": 0.1}
+                "options": {
+                    "temperature": 0.1,
+                    "num_gpu": -1 if GPU_AVAILABLE else 0,  # -1 = all layers on GPU
+                }
             },
             timeout=None
         )

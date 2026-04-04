@@ -97,6 +97,20 @@ function interceptSend() {
     e.preventDefault();
     e.stopImmediatePropagation();
 
+    // ── Real-time save: persist user message immediately ──────────
+    const sessionId = getSessionId();
+    if (sessionId) {
+      const existing = cleanMessages(getMessages());
+      const title    = existing.length === 0 ? userText.slice(0, 60) : "";
+      sendMsg({
+        type:      "SAVE_SESSION",
+        messages:  [...existing, { role: "user", content: userText }],
+        appId:     "claude",
+        sessionId,
+        title,
+      }, null);
+    }
+
     const injected = await injectMemoryContext(userText);
     if (injected) {
       input.innerText = injected;

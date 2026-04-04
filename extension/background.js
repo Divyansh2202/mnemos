@@ -260,6 +260,24 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     });
     return true;
   }
+
+  // ── Real-time raw session save (no extraction, fire-and-forget) ──
+  if (msg.type === "SAVE_SESSION") {
+    getSettings().then(({ serverUrl, userId }) => {
+      fetch(`${serverUrl}/sessions`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          session_id: msg.sessionId || "",
+          messages:   msg.messages,
+          app_id:     msg.appId,
+          user_id:    userId,
+          title:      msg.title || "",
+        }),
+      }).catch(() => {});
+    });
+    return false; // fire-and-forget, no sendResponse needed
+  }
 });
 
 // Process any leftover queue on startup

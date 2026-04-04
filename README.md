@@ -398,34 +398,57 @@ Click the ⬡ icon in your toolbar any time:
 ┌──────────────────────────────────────┐
 │  ⬡ MnemOS                    🟢     │  ← green dot = server connected
 ├──────────────────────────────────────┤
-│  Server                              │
-│  [ http://localhost:8765           ] │
-│  User ID                             │
-│  [ default                         ] │
-│  [ Save ]                            │
-├──────────────────────────────────────┤
-│  ⏳ 2 conversations queued           │  ← shows if server was briefly offline
-├──────────────────────────────────────┤
-│  Memories  [34]                      │
+│  Memories  [13]                      │
 │  ┌────────────────────────────────┐  │
-│  │ User codes in Python and Rust  │  │
-│  │ User has a dog named Bruno     │  │
-│  │ User prefers dark roast coffee │  │
-│  │ User uses Neovim on Arch Linux │  │
-│  │ User works late night, 11pm–3am│  │
+│  │ User knows Python              │  │
+│  │ User prefers dark mode editors │  │
+│  │ User is building a REST API    │  │
+│  │ User wants to learn Rust       │  │
+│  │ User uses VSCode with Vim keys │  │
 │  │ ...                            │  │
 │  └────────────────────────────────┘  │
 ├──────────────────────────────────────┤
 │  Extraction Model                    │
-│  [ Gemini Flash      ▼ ]             │  ← or Ollama
-│  [ qwen2.5:3b        ▼ ] [Download]  │  ← appears when Ollama selected
-│  [ Apply ]                           │
+│  ┌──────────────────────────────┐    │
+│  │  Engine:  [ Ollama      ▼ ]  │    │  ← switch between Ollama / Gemini
+│  │  Model:   [ qwen2.5:7b  ▼ ]  │    │  ← pick any downloaded model
+│  │           [ Apply ]           │    │
+│  └──────────────────────────────┘    │
 ├──────────────────────────────────────┤
 │  [ ⬡ Dashboard ]  [ ◎ Sessions ]     │
 ├──────────────────────────────────────┤
 │  ☑ Auto-capture              [ ↻ ]   │
 └──────────────────────────────────────┘
 ```
+
+> **Changing the model:** open the popup, pick an engine (Ollama or Gemini Flash) and
+> choose a model from the dropdown. If the model isn't downloaded yet, switch to the
+> Dashboard → Settings tab and hit **Download** next to the model name. Click **Apply**
+> and MnemOS will use the new model for all future extractions.
+
+---
+
+### Screenshots
+
+**Extension Popup**
+
+![Extension Popup](docs/images/extension_popup.png)
+
+**Dashboard — Overview**
+
+![Dashboard Overview](docs/images/dashboard.png)
+
+**Dashboard — Memories**
+
+![Dashboard Memories](docs/images/dashboard_memories.png)
+
+**Dashboard — Sessions**
+
+![Dashboard Sessions](docs/images/dashboard_sessions.png)
+
+**Dashboard — Settings**
+
+![Dashboard Settings](docs/images/dashboard_settings.png)
 
 ---
 
