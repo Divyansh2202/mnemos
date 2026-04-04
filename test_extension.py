@@ -213,6 +213,9 @@ except Exception as e:
 # GET_QUEUE_SIZE (no server endpoint — handled in chrome.storage; mark as N/A)
 check("GET_QUEUE_SIZE (chrome.storage — browser only)", True, "N/A in server test")
 
+# Reset to ollama so section 6 learn calls work without a Gemini key
+requests.post(f"{BASE}/config", json={"mode": "ollama", "gen_model": "qwen2.5:7b"})
+
 # ════════════════════════════════════════════════════════════
 section("6. FULL INJECT → STORE → RETRIEVE CYCLE")
 # ════════════════════════════════════════════════════════════

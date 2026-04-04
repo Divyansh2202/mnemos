@@ -8,6 +8,21 @@ from pgvector.psycopg2 import register_vector
 from protocol.types import Memory, MemoryQuery, PrivacyLevel
 
 
+def _detect_gpu() -> bool:
+    """Return True if an NVIDIA GPU is available via nvidia-smi."""
+    import subprocess
+    try:
+        r = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+            capture_output=True, text=True, timeout=3
+        )
+        return r.returncode == 0 and bool(r.stdout.strip())
+    except Exception:
+        return False
+
+_GPU_AVAILABLE: bool = _detect_gpu()
+
+
 class MemoryStore:
 
     def __init__(self):
@@ -16,14 +31,19 @@ class MemoryStore:
         self.embed_model = os.getenv("OLLAMA_EMBED_MODEL", "bge-m3")
         self.embed_dim   = self._detect_dim()
         self._init_db()
-        print(f"[MemoryStore] Ready | Model: {self.embed_model} | Dim: {self.embed_dim}")
+        device = "GPU (CUDA)" if _GPU_AVAILABLE else "CPU (no GPU found)"
+        print(f"[MemoryStore] Ready | Model: {self.embed_model} | Dim: {self.embed_dim} | Device: {device}")
 
     # ─── EMBEDDING ────────────────────────────────────────────
 
     def embed(self, text: str) -> list[float]:
         resp = requests.post(
             f"{self.ollama_url}/api/embed",
-            json={"model": self.embed_model, "input": text}
+            json={
+                "model":   self.embed_model,
+                "input":   text,
+                "options": {"num_gpu": -1 if _GPU_AVAILABLE else 0},
+            }
         )
         resp.raise_for_status()
         return resp.json()["embeddings"][0]
@@ -31,7 +51,11 @@ class MemoryStore:
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         resp = requests.post(
             f"{self.ollama_url}/api/embed",
-            json={"model": self.embed_model, "input": texts}
+            json={
+                "model":   self.embed_model,
+                "input":   texts,
+                "options": {"num_gpu": -1 if _GPU_AVAILABLE else 0},
+            }
         )
         resp.raise_for_status()
         return resp.json()["embeddings"]
@@ -187,7 +211,7 @@ class MemoryStore:
                 )
                 AND confidence >= %s
                 AND (expires_at IS NULL OR expires_at > NOW())
-                AND 1 - (embedding <=> %s::vector) > 0.65
+                AND 1 - (embedding <=> %s::vector) > 0.55
             ORDER BY similarity DESC
             LIMIT %s
         """, (

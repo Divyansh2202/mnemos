@@ -99,6 +99,21 @@ def set_config(key: str, value: str):
 _load_config()
 
 
+def _detect_gpu() -> bool:
+    """Return True if an NVIDIA GPU is available via nvidia-smi."""
+    import subprocess
+    try:
+        r = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+            capture_output=True, text=True, timeout=3
+        )
+        return r.returncode == 0 and bool(r.stdout.strip())
+    except Exception:
+        return False
+
+GPU_AVAILABLE: bool = _detect_gpu()
+
+
 class ContextEngine:
 
     def __init__(self):
@@ -107,7 +122,8 @@ class ContextEngine:
         # defaults from env — can be overridden at runtime via set_config()
         _config.setdefault("mode",      os.getenv("MNEMOS_EXTRACTION", "ollama"))
         _config.setdefault("gen_model", os.getenv("OLLAMA_GEN_MODEL",  "qwen2.5:3b"))
-        print(f"[ContextEngine] Mode: {_config['mode']} | Model: {_config['gen_model']}")
+        gpu_label = "GPU (CUDA)" if GPU_AVAILABLE else "CPU (no GPU found)"
+        print(f"[ContextEngine] Mode: {_config['mode']} | Model: {_config['gen_model']} | Device: {gpu_label}")
 
     @property
     def mode(self):      return _config.get("mode", "ollama")
@@ -137,7 +153,10 @@ class ContextEngine:
                 "model":   self.gen_model,
                 "prompt":  prompt,
                 "stream":  False,
-                "options": {"temperature": 0.1}
+                "options": {
+                    "temperature": 0.1,
+                    "num_gpu": -1 if GPU_AVAILABLE else 0,  # -1 = all layers on GPU
+                }
             },
             timeout=None
         )

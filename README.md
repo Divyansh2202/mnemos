@@ -429,6 +429,30 @@ Click the ⬡ icon in your toolbar any time:
 
 ---
 
+### Screenshots
+
+**Extension Popup**
+
+![Extension Popup](docs/images/extension_popup.png)
+
+**Dashboard — Overview**
+
+![Dashboard Overview](docs/images/dashboard.png)
+
+**Dashboard — Memories**
+
+![Dashboard Memories](docs/images/dashboard_memories.png)
+
+**Dashboard — Sessions**
+
+![Dashboard Sessions](docs/images/dashboard_sessions.png)
+
+**Dashboard — Settings**
+
+![Dashboard Settings](docs/images/dashboard_settings.png)
+
+---
+
 # PATH 2 — CLI (Command Line)
 
 > Best for: developers who want full control over the setup.

@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 import requests as _requests
-from server.memory_store  import MemoryStore
+from server.memory_store  import MemoryStore, _GPU_AVAILABLE
 from server.context_engine import ContextEngine, get_config, set_config
 from protocol.types import Memory, MemoryQuery, StoreRequest, LearnRequest
 
@@ -38,7 +38,11 @@ def dashboard():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "version": "0.1.0"}
+    return {
+        "status":  "ok",
+        "version": "0.1.0",
+        "device":  "gpu" if _GPU_AVAILABLE else "cpu",
+    }
 
 
 @app.get("/stats")
