@@ -943,7 +943,7 @@ curl -X POST http://localhost:8765/memory/retrieve \
 | Cost | Free |
 | Best model | `qwen2.5:3b` (balanced), `qwen2.5:7b` (better) |
 
-### Benchmark (same long conversation)
+### Benchmark (same long conversation on CPU)
 
 | Engine | Time | Facts Extracted | Notes |
 |--------|------|----------------|-------|
